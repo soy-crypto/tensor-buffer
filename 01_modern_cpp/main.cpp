@@ -1,13 +1,12 @@
 #include <iostream>
 
-class Buffer {
-
+class Buffer 
+{
 private:
     float* data;
     int size;
 
 public:
-
     Buffer(int n) : size(n)
     {
         data = new float[n];
@@ -35,13 +34,12 @@ public:
 
         return s;
     }
+
 };
 
 int main()
 {
     Buffer A(10);
-
     A.fill(1);
-
     std::cout<<"Sum "<<A.sum()<<"\n";
 }
