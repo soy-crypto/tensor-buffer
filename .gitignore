@@ -1,0 +1,8 @@
+build/
+*.out
+*.o
+*.ptx
+*.engine
+*.log
+__pycache__/
+*.pyc
