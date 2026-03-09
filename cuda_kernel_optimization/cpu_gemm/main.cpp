@@ -19,7 +19,7 @@ void gemm(const float* A, const float* B, float* C, int N)
 
     }
         
-}
+}//void
 
 int main()
 {
@@ -40,4 +40,5 @@ int main()
 
     //Return
     return;
-}
+    
+}//main
