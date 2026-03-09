@@ -5,7 +5,6 @@ class Tensor
 {
 
 public:
-
     std::vector<float> data;
     int rows;
     int cols;
