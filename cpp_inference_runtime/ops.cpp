@@ -2,18 +2,21 @@
 #include <algorithm>
 #include <cmath>
 
-Tensor ReLU::forward(const Tensor& input) {
+Tensor ReLU::forward(const Tensor& input) 
+{
 
     Tensor output = input;
-
-    for (size_t i = 0; i < input.data.size(); i++) {
+    for (size_t i = 0; i < input.data.size(); i++) 
+    {
         output.data[i] = std::max(0.0f, input.data[i]);
     }
 
     return output;
 }
 
-Tensor Softmax::forward(const Tensor& input) {
+
+Tensor Softmax::forward(const Tensor& input) 
+{
 
     Tensor output = input;
     float sum = 0.0f;
@@ -29,4 +32,5 @@ Tensor Softmax::forward(const Tensor& input) {
     }
 
     return output;
+
 }
