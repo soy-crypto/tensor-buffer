@@ -36,7 +36,7 @@ int main()
 
     //Update latency
     std::chrono::duration<double> diff=end-start;
-    std::cout<<"Runtime "<<diff.count()<<" s\n";
+    std::cout << "Runtime "<< diff.count() << " s\n";
 
     //Return
     return;
