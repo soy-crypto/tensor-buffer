@@ -11,5 +11,4 @@ class Tensor
     public:
         Tensor(int r,int c);
         float& operator()(int r,int c);
-
 };
