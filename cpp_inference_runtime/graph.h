@@ -4,8 +4,10 @@
 
 class Graph 
 {
-    public:
+    private:
         std::vector<Operator*> ops;
+
+    public:
         void add_op(Operator* op);
         Tensor run(const Tensor& input);
 };
