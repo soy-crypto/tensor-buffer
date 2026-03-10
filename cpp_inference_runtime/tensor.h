@@ -3,12 +3,13 @@
 
 class Tensor 
 {
-    private:
-        std::vector<float> data;
-        int rows;
-        int cols;
+private:
+    std::vector<float> data;
+    int rows;
+    int cols;
 
-    public:
-        Tensor(int r,int c);
-        float& operator()(int r,int c);
+public:
+    
+    Tensor(int r, int c);
+    float& operator()(int r,int c);
 };
