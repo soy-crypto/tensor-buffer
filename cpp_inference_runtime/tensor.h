@@ -12,4 +12,8 @@ public:
     Tensor(int r, int c);
     float& operator()(int r, int c);
     float operator()(int r, int c) const;
+    const float* getData() const;
+    int getRows() const;
+    int getCols() const;
+
 };
