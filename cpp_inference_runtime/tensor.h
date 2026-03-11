@@ -9,11 +9,15 @@ private:
     int cols;
 
 public:
+
     Tensor(int r, int c);
+
+    //Accessors
     float& operator()(int r, int c);
     float operator()(int r, int c) const;
+
+    //Data pointers
     const float* getData() const;
     int getRows() const;
     int getCols() const;
-
 };
