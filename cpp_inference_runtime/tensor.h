@@ -9,7 +9,7 @@ class Tensor
         int cols;
 
     public:
-
+        //constructor
         Tensor(int r, int c);
 
         //Accessors
@@ -20,5 +20,5 @@ class Tensor
         const float* getData() const;
         int getRows() const;
         int getCols() const;
-        
+
 };
