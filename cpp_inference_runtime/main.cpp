@@ -10,7 +10,8 @@ int main()
     //Init
     /** Init data */
     Tensor input({1,3});
-    input.data = {1.0f, 2.0f, 3.0f};
+    data = input.data;
+    data = {1.0f, 2.0f, 3.0f};
     
     /** Init grap */
     Graph graph;
