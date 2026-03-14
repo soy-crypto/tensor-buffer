@@ -34,5 +34,6 @@ int main()
     cudaFree(C);
 
     //Return
-    return;
+    return 0;
+    
 }
