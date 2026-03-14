@@ -117,17 +117,17 @@ int main()
     std::vector<float> B(N,2.0f);
     std::vector<float> C(N);
 
-    float *d_A,*d_B,*d_C;
+    float *d_A, *d_B, *d_C;
 
-    cudaMalloc(&d_A,N*sizeof(float));
-    cudaMalloc(&d_B,N*sizeof(float));
-    cudaMalloc(&d_C,N*sizeof(float));
+    cudaMalloc(&d_A, N*sizeof(float));
+    cudaMalloc(&d_B, N*sizeof(float));
+    cudaMalloc(&d_C, N*sizeof(float));
 
-    cudaMemcpy(d_A,A.data(),N*sizeof(float),cudaMemcpyHostToDevice);
-    cudaMemcpy(d_B,B.data(),N*sizeof(float),cudaMemcpyHostToDevice);
+    cudaMemcpy(d_A,A.data(), N*sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B,B.data(), N*sizeof(float), cudaMemcpyHostToDevice);
 
     int block = 256;
-    int grid = (N+block-1)/block;
+    int grid = (N + block - 1) / block;
 
     vector_add_kernel<<<grid,block>>>(d_A,d_B,d_C,N);
 

@@ -155,7 +155,7 @@ int main()
     Tensor input(1,3);
     float* data = input.getData();
 
-    for(int i=0;i<input.getSize();i++)
+    for(int i = 0;i < input.getSize(); i++)
     {
         data[i] = static_cast<float>(i);
     }
