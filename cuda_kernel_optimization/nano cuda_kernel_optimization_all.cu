@@ -70,7 +70,7 @@ __global__ void gemm_naive_kernel(float* A,float* B,float* C,int N)
 // CUDA TILED GEMM
 ////////////////////////////////////////////////////////////
 
-__global__ void gemm_tiled_kernel(float* A,float* B,float* C,int N)
+__global__ void gemm_tiled_kernel(float* A, float* B, float* C,int N)
 {
     // Shared memory tiles used by all threads in the block
     __shared__ float A_tile[TILE][TILE];
