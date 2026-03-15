@@ -27,48 +27,49 @@
 
 class Tensor
 {
-private:
-    std::vector<float> data;
-    int rows;
-    int cols;
+    private:
+        std::vector<float> data;
+        int rows;
+        int cols;
 
-public:
-    Tensor(int r, int c) : data(r * c, 0.0f), rows(r), cols(c) {}
+    public:
+        Tensor(int r, int c) : data(r * c, 0.0f), rows(r), cols(c) {}
 
-    float& operator()(int r, int c)
-    {
-        return data[r * cols + c];
-    }
+        float& operator()(int r, int c)
+        {
+            return data[r * cols + c];
+        }
 
-    float operator()(int r, int c) const
-    {
-        return data[r * cols + c];
-    }
+        float operator()(int r, int c) const
+        {
+            return data[r * cols + c];
+        }
 
-    float* getData()
-    {
-        return data.data();
-    }
+        float* getData()
+        {
+            return data.data();
+        }
 
-    const float* getData() const
-    {
-        return data.data();
-    }
+        const float* getData() const
+        {
+            return data.data();
+        }
 
-    int getRows() const
-    {
-        return rows;
-    }
+        int getRows() const
+        {
+            return rows;
+        }
 
-    int getCols() const
-    {
-        return cols;
-    }
+        int getCols() const
+        {
+            return cols;
+        }
 
-    int getSize() const
-    {
-        return rows * cols;
-    }
+        int getSize() const
+        {
+            return rows * cols;
+        }
+        
 };
 
 ////////////////////////////////////////////////////////////
@@ -77,9 +78,9 @@ public:
 
 class Operator
 {
-public:
-    virtual Tensor forward(const Tensor& input) = 0;
-    virtual ~Operator() = default;
+    public:
+        virtual Tensor forward(const Tensor& input) = 0;
+        virtual ~Operator() = default;
 };
 
 ////////////////////////////////////////////////////////////
@@ -88,21 +89,22 @@ public:
 
 class ReLU : public Operator
 {
-public:
-    Tensor forward(const Tensor& input) override
-    {
-        Tensor output(input.getRows(), input.getCols());
-
-        const float* inputData = input.getData();
-        float* outputData = output.getData();
-
-        for(int i = 0; i < input.getSize(); i++)
+    public:
+        Tensor forward(const Tensor& input) override
         {
-            outputData[i] = std::max(0.0f, inputData[i]);
+            Tensor output(input.getRows(), input.getCols());
+
+            const float* inputData = input.getData();
+            float* outputData = output.getData();
+
+            for(int i = 0; i < input.getSize(); i++)
+            {
+                outputData[i] = std::max(0.0f, inputData[i]);
+            }
+
+            return output;
         }
 
-        return output;
-    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -113,34 +115,35 @@ public:
 
 class Softmax : public Operator
 {
-public:
-    Tensor forward(const Tensor& input) override
-    {
-        Tensor output(input.getRows(), input.getCols());
-
-        const float* inputData = input.getData();
-        float* outputData = output.getData();
-
-        float maxVal = inputData[0];
-        for(int i = 1; i < input.getSize(); i++)
+    public:
+        Tensor forward(const Tensor& input) override
         {
-            maxVal = std::max(maxVal, inputData[i]);
+            Tensor output(input.getRows(), input.getCols());
+
+            const float* inputData = input.getData();
+            float* outputData = output.getData();
+
+            float maxVal = inputData[0];
+            for(int i = 1; i < input.getSize(); i++)
+            {
+                maxVal = std::max(maxVal, inputData[i]);
+            }
+
+            float sum = 0.0f;
+            for(int i = 0; i < input.getSize(); i++)
+            {
+                outputData[i] = std::exp(inputData[i] - maxVal);
+                sum += outputData[i];
+            }
+
+            for(int i = 0; i < input.getSize(); i++)
+            {
+                outputData[i] /= sum;
+            }
+
+            return output;
         }
 
-        float sum = 0.0f;
-        for(int i = 0; i < input.getSize(); i++)
-        {
-            outputData[i] = std::exp(inputData[i] - maxVal);
-            sum += outputData[i];
-        }
-
-        for(int i = 0; i < input.getSize(); i++)
-        {
-            outputData[i] /= sum;
-        }
-
-        return output;
-    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -168,44 +171,45 @@ __global__ void relu_kernel(const float* input, float* output, int N)
 
 class GPUReLU : public Operator
 {
-public:
-    Tensor forward(const Tensor& input) override
-    {
-        Tensor output(input.getRows(), input.getCols());
+    public:
+        Tensor forward(const Tensor& input) override
+        {
+            Tensor output(input.getRows(), input.getCols());
 
-        const int N = input.getSize();
-        const size_t bytes = N * sizeof(float);
+            const int N = input.getSize();
+            const size_t bytes = N * sizeof(float);
 
-        float* d_input = nullptr;
-        float* d_output = nullptr;
+            float* d_input = nullptr;
+            float* d_output = nullptr;
 
-        CHECK_CUDA(cudaMalloc(&d_input, bytes));
-        CHECK_CUDA(cudaMalloc(&d_output, bytes));
+            CHECK_CUDA(cudaMalloc(&d_input, bytes));
+            CHECK_CUDA(cudaMalloc(&d_output, bytes));
 
-        CHECK_CUDA(cudaMemcpy(
-            d_input,
-            input.getData(),
-            bytes,
-            cudaMemcpyHostToDevice));
+            CHECK_CUDA(cudaMemcpy(
+                d_input,
+                input.getData(),
+                bytes,
+                cudaMemcpyHostToDevice));
 
-        int block = 256;
-        int grid = (N + block - 1) / block;
+            int block = 256;
+            int grid = (N + block - 1) / block;
 
-        relu_kernel<<<grid, block>>>(d_input, d_output, N);
-        CHECK_CUDA(cudaGetLastError());
-        CHECK_CUDA(cudaDeviceSynchronize());
+            relu_kernel<<<grid, block>>>(d_input, d_output, N);
+            CHECK_CUDA(cudaGetLastError());
+            CHECK_CUDA(cudaDeviceSynchronize());
 
-        CHECK_CUDA(cudaMemcpy(
-            output.getData(),
-            d_output,
-            bytes,
-            cudaMemcpyDeviceToHost));
+            CHECK_CUDA(cudaMemcpy(
+                output.getData(),
+                d_output,
+                bytes,
+                cudaMemcpyDeviceToHost));
 
-        CHECK_CUDA(cudaFree(d_input));
-        CHECK_CUDA(cudaFree(d_output));
+            CHECK_CUDA(cudaFree(d_input));
+            CHECK_CUDA(cudaFree(d_output));
 
-        return output;
-    }
+            return output;
+        }
+        
 };
 
 ////////////////////////////////////////////////////////////
@@ -214,26 +218,27 @@ public:
 
 class Graph
 {
-private:
-    std::vector<Operator*> ops;
+    private:
+        std::vector<Operator*> ops;
 
-public:
-    void add_op(Operator* op)
-    {
-        ops.push_back(op);
-    }
-
-    Tensor run(const Tensor& input)
-    {
-        Tensor x = input;
-
-        for(Operator* op : ops)
+    public:
+        void add_op(Operator* op)
         {
-            x = op->forward(x);
+            ops.push_back(op);
         }
 
-        return x;
-    }
+        Tensor run(const Tensor& input)
+        {
+            Tensor x = input;
+
+            for(Operator* op : ops)
+            {
+                x = op->forward(x);
+            }
+
+            return x;
+        }
+
 };
 
 ////////////////////////////////////////////////////////////
