@@ -4,6 +4,7 @@
 #include <cuda_runtime.h>
 
 #define TILE 16
+#define M 256;
 
 ////////////////////////////////////////////////////////////
 // CPU GEMM
@@ -131,27 +132,31 @@ int main()
     ////////////////////////////////////////////////////////////
     // Vector Add Test
     ////////////////////////////////////////////////////////////
-
     std::cout << "==== Vector Add ====" << std::endl;
+    //Create arrays on CPU
     int N = 1 << 20;
     std::vector<float> A(N, 1.0f);
     std::vector<float> B(N, 2.0f);
     std::vector<float> C(N);
 
+    //Create arrays on GPU
     float *d_A, *d_B, *d_C;
     cudaMalloc(&d_A, N * sizeof(float));
     cudaMalloc(&d_B, N * sizeof(float));
     cudaMalloc(&d_C, N * sizeof(float));
-
     cudaMemcpy(d_A, A.data(), N * sizeof(float), cudaMemcpyHostToDevice);
     cudaMemcpy(d_B, B.data(), N * sizeof(float), cudaMemcpyHostToDevice);
 
-    int grid = (N + block - 1) / block;
+    //Create cuda kernel
     int block = 256;
-    vector_add_kernel<<<grid,block>>>(d_A, d_B, d_C, N);
+    int grid = (N + block - 1) / block;
+
+    //Call cuda fubction
+    vector_add_kernel<<<grid, block>>>(d_A, d_B, d_C, N);
     cudaMemcpy(C.data(), d_C, N * sizeof(float), cudaMemcpyDeviceToHost);
     std::cout << "Result example: " << C[0] << std::endl;
-
+    
+    //Free gpu memory
     cudaFree(d_A);
     cudaFree(d_B);
     cudaFree(d_C);
@@ -160,44 +165,46 @@ int main()
     // GEMM TEST
     ////////////////////////////////////////////////////////////
     std::cout << "\n==== GEMM ====" << std::endl;
-    int M = 256;
-    size_t bytes = M*M*sizeof(float);
-
-    std::vector<float> h_A(M*M);
-    std::vector<float> h_B(M*M);
-    std::vector<float> h_C(M*M);
-
-    for(int i=0;i<M*M;i++)
+    //Create arrays on CPU
+    std::vector<float> h_A(M * M);
+    std::vector<float> h_B(M * M);
+    std::vector<float> h_C(M * M);
+    for(int i = 0;i < M * M; i++)
     {
         h_A[i] = 1.0f;
         h_B[i] = 1.0f;
     }
 
+    //Create array on GPU
     float *g_A, *g_B, *g_C;
-
+    size_t bytes = M * M * sizeof(float);
     cudaMalloc(&g_A, bytes);
     cudaMalloc(&g_B, bytes);
     cudaMalloc(&g_C, bytes);
-
     cudaMemcpy(g_A, h_A.data(), bytes, cudaMemcpyHostToDevice);
-    cudaMemcpy(g_B, h_B.data(), bytes,cudaMemcpyHostToDevice);
-
-    dim3 grid2(M/TILE, M/TILE);
+    cudaMemcpy(g_B, h_B.data(), bytes, cudaMemcpyHostToDevice);
+    
+    //grid: number of tiles of C, block: number of threads computing each tile
+    dim3 grid2(M / TILE, M / TILE);
     dim3 block2(TILE, TILE);
-    gemm_naive_kernel<<<grid2,block2>>>(g_A, g_B, g_C, M);
-    cudaMemcpy(h_C.data(), g_C,bytes, cudaMemcpyDeviceToHost);
 
+    //Call gemm_naive kernel
+    std::cout << "Naive GEMM example: " << std::endl;
+    gemm_naive_kernel<<<grid2, block2>>>(g_A, g_B, g_C, M);
+    cudaMemcpy(h_C.data(), g_C,bytes, cudaMemcpyDeviceToHost);
     std::cout << "Naive GEMM result example: " << h_C[0] << std::endl;
 
-    gemm_tiled_kernel<<<grid2,block2>>>(g_A, g_B, g_C, M);
-
+    //call gemm_tiled_kernel
+    std::cout << "Tiles GEMM example: " << h_C[0] << std::endl;
+    gemm_tiled_kernel<<<grid2, block2>>>(g_A, g_B, g_C, M);
     cudaMemcpy(h_C.data(), g_C,bytes, cudaMemcpyDeviceToHost);
-
     std::cout << "Tiled GEMM result example: " << h_C[0] << std::endl;
-
+    
+    //free gpu memory
     cudaFree(g_A);
     cudaFree(g_B);
     cudaFree(g_C);
 
+    //return
     return 0;
 }
