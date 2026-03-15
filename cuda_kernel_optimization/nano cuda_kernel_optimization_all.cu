@@ -72,32 +72,45 @@ __global__ void gemm_naive_kernel(float* A,float* B,float* C,int N)
 
 __global__ void gemm_tiled_kernel(float* A,float* B,float* C,int N)
 {
+    // Shared memory tiles used by all threads in the block
     __shared__ float A_tile[TILE][TILE];
     __shared__ float B_tile[TILE][TILE];
 
+    // Thread position inside the block
     int tx = threadIdx.x;
     int ty = threadIdx.y;
 
+    // Global matrix position this thread computes
     int row = blockIdx.y * TILE + ty;
     int col = blockIdx.x * TILE + tx;
 
     float sum = 0.0f;
+
+    // Loop over tile pairs needed for the dot product
     for(int t = 0; t < N / TILE; t++)
     {
+        // Each thread loads one element of A and B into shared memory
         A_tile[ty][tx] = A[row * N + t * TILE + tx];
         B_tile[ty][tx] = B[(t * TILE + ty) * N + col];
+
+        // Wait until all threads finish loading the tiles
         __syncthreads();
 
+        // Compute partial dot product using the loaded tiles
         for(int k = 0; k < TILE; k++)
         {
             sum += A_tile[ty][k] * B_tile[k][tx];
         }
 
+        // Ensure all threads finished using the tiles
+        // before they are overwritten in the next iteration
         __syncthreads();
     }
 
+    // Write the final result for this thread's matrix element
     C[row * N + col] = sum;
 }
+
 
 ////////////////////////////////////////////////////////////
 // MAIN
