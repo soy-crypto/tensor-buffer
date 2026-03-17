@@ -5,118 +5,128 @@
 ////////////////////////////////////////////////////////////
 // COPY KERNEL (COALESCED MEMORY ACCESS)
 ////////////////////////////////////////////////////////////
-
 __global__ void copy_kernel(float* A, float* B, int N)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-
     if(i < N)
+    {
         B[i] = A[i];
+    }
+
 }
 
-////////////////////////////////////////////////////////////
+///////////////////////////////////
 // STRIDED MEMORY ACCESS (BAD COALESCING)
 ////////////////////////////////////////////////////////////
-
 __global__ void strided_kernel(float* A, float* B, int N, int stride)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-
     int idx = i * stride;
-
     if(idx < N)
+    {
         B[idx] = A[idx];
+    }
+
 }
 
 ////////////////////////////////////////////////////////////
 // COMPUTE TEST
 ////////////////////////////////////////////////////////////
-
 __global__ void compute_kernel(float* A, float* B, int N)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-
     if(i < N)
     {
         float val = A[i];
-
         for(int k = 0; k < 100; k++)
+        {
             val = val * 1.1f + 0.5f;
+        }
 
         B[i] = val;
+
     }
+
 }
 
 ////////////////////////////////////////////////////////////
 // BANDWIDTH TEST
 ////////////////////////////////////////////////////////////
-
 float run_bandwidth(float *A, float *B, int N)
 {
+    // Init
     int block = 256;
     int grid = (N + block - 1) / block;
-
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
+    // Start computation
     cudaEventRecord(start);
-
     copy_kernel<<<grid, block>>>(A, B, N);
-
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
-
+    
+    // Get duration
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
 
+    // Clear CUDA event
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
 
+    // GPU bandwidth
     float bytes = (float)N * sizeof(float) * 2;
     float gb = bytes / 1e9;
+    float bandwidth = gb / (ms / 1000.0f);
 
-    return gb / (ms / 1000.0f);
+    //Return
+    return bandwidth;
 }
 
 ////////////////////////////////////////////////////////////
 // STRIDED TEST
 ////////////////////////////////////////////////////////////
-
 float run_strided(float *A, float *B, int N)
 {
+    //Init
     int stride = 4;
 
+    //kernel configuration
     int block = 256;
     int grid = (N + block - 1) / block;
 
+    //Start CUDA events
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
 
+    //Document duration
     cudaEventRecord(start);
-
     strided_kernel<<<grid, block>>>(A, B, N, stride);
-
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
 
+    // Get duration
     float ms;
     cudaEventElapsedTime(&ms, start, stop);
 
+    //Free CUDA events
     cudaEventDestroy(start);
     cudaEventDestroy(stop);
-
+    
+    //Compute bandwidth
     float bytes = (float)N * sizeof(float) * 2;
     float gb = bytes / 1e9;
-
-    return gb / (ms / 1000.0f);
+    float bandwidth = gb / (ms / 1000.0f);
+    
+    //Return
+    return bandwidth;
 }
 
 ////////////////////////////////////////////////////////////
 // COMPUTE TEST
 ////////////////////////////////////////////////////////////
-
 float run_compute(float *A, float *B, int N)
 {
     int block = 256;
@@ -145,7 +155,6 @@ float run_compute(float *A, float *B, int N)
 ////////////////////////////////////////////////////////////
 // MAIN
 ////////////////////////////////////////////////////////////
-
 int main()
 {
     int N = 1 << 26;
@@ -183,5 +192,6 @@ int main()
     cudaFree(d_A);
     cudaFree(d_B);
 
+    //Return
     return 0;
 }
