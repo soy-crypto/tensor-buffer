@@ -166,7 +166,6 @@ int main()
     {
         h_A[i] = 1.0f;
     }
-        
 
     // GPU memory
     float *d_A, *d_B;
