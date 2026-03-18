@@ -261,4 +261,5 @@ int main()
     std::cout << "Inference done\n";
 
     return 0;
+    
 }
