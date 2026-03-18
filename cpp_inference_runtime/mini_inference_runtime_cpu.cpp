@@ -81,7 +81,6 @@ class Softmax : public Operator
         Tensor forward(const Tensor& input) override
         {
             Tensor output(input.getRows(), input.getCols());
-
             const float* in = input.getData();
             float* out = output.getData();
 
@@ -126,7 +125,6 @@ class Graph
         Tensor run(const Tensor& input)
         {
             Tensor x = input;
-
             for (const auto* op : ops)
             {
                 Tensor out = op->forward(x);
@@ -146,7 +144,6 @@ int main()
 {
     Tensor input(1, 3);
     float* data = input.getData();
-
     for (int i = 0; i < input.getSize(); i++)
     {
         data[i] = static_cast<float>(i);

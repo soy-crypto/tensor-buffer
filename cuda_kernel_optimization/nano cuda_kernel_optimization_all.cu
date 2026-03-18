@@ -38,7 +38,6 @@ void cpu_gemm(const float* A, const float* B, float* C, int N)
 __global__ void vector_add_kernel(float* A, float* B, float* C, int N)
 {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
-
     if(i < N)
     {
         C[i] = A[i] + B[i];
@@ -57,7 +56,6 @@ __global__ void gemm_naive_kernel(float* A,float* B,float* C,int N)
     if(row < N && col < N)
     {
         float sum = 0.0f;
-
         for(int k = 0;k < N; k++)
         {
             sum += A[row * N + k] * B[k * N + col];
@@ -79,7 +77,6 @@ for each tile pair (t):
 */
 
 ////////////////////////////////////////////////////////////
-
 __global__ void gemm_tiled_kernel(float* A, float* B, float* C,int N)
 {
     // Shared memory tiles used by all threads in the block
@@ -137,6 +134,7 @@ int main()
     // Vector Add Test
     ////////////////////////////////////////////////////////////
     std::cout << "==== Vector Add ====" << std::endl;
+
     //Create arrays on CPU
     int N = 1 << 20;
     std::vector<float> A(N, 1.0f);
