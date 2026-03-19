@@ -128,7 +128,7 @@ class Graph
             for (const auto* op : ops)
             {
                 Tensor out = op->forward(x);
-                x = std::move(out);   // 🔥 move instead of copy
+                x = std::move(out);   //move instead of copy
             }
 
             return x;
