@@ -36,5 +36,20 @@ class Operator
 
 class ReLU: public Operator
 {
-    
-}
+    public:
+        Tensor forward(const Tensor& input) override
+        {
+            Tensor output(input.getRows(), input.getCols());
+            const float* in = input.getData();
+            float* out = output.getData();
+            for(int i = 0; i < input.getSize(); i++)
+            {
+                out[i] = std::max(0.0f, in[i]);
+            }
+
+            //return
+            return output;
+        }
+
+};
+
